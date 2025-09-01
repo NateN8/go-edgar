@@ -1,0 +1,198 @@
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+
+linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment  # too strict for this project
+      - shadow         # can be useful but too noisy
+  
+  gocyclo:
+    min-complexity: 15
+  
+  gofmt:
+    simplify: true
+  
+  goimports:
+    local-prefixes: github.com/natedogg/edgar
+  
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+    ignore-tests: true
+  
+  misspell:
+    locale: US
+  
+  lll:
+    line-length: 120
+    tab-width: 1
+  
+  unused:
+    check-exported: false
+  
+  unparam:
+    check-exported: false
+  
+  nakedret:
+    max-func-lines: 30
+  
+  prealloc:
+    simple: true
+    range-loops: true
+    for-loops: false
+  
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - dupImport # https://github.com/go-critic/go-critic/issues/845
+      - ifElseChain
+      - octalLiteral
+      - whyNoLint
+      - wrapperFunc
+      - importShadow # not important for this project
+      - unnamedResult # not enforced in this project
+
+  revive:
+    min-confidence: 0.8
+
+linters:
+  enable:
+    - bodyclose
+    - dogsled
+    - dupl
+    - errcheck
+    - exhaustive
+    - exportloopref
+    - funlen
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nakedret
+    - noctx
+    - nolintlint
+    - rowserrcheck
+    - staticcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
+    - asciicheck
+    - gocognit
+    - godot
+    - godox
+    - goerr113
+    - gofumpt
+    - goheader
+    - gomodguard
+    - importas
+    - makezero
+    - nestif
+    - nilerr
+    - nlreturn
+    - prealloc
+    - predeclared
+    - promlinter
+    - revive
+    - sqlclosecheck
+    - tenv
+    - testpackage
+    - thelper
+    - tparallel
+    - wastedassign
+    - wsl
+  
+  disable:
+    - exhaustivestruct  # too strict
+    - gci              # conflicts with goimports
+    - forbidigo        # not needed for this project
+    - forcetypeassert  # not needed for this project
+    - gochecknoglobals # we have some legitimate globals
+    - godox            # we allow TODO comments
+    - goerr113         # too strict for this project
+    - paralleltest     # not all tests can be parallel
+    - testpackage      # we test internal functions
+    - wrapcheck        # too verbose for this project
+
+issues:
+  exclude-rules:
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - funlen
+        - goconst
+        - gocognit
+        - lll
+    
+    # Exclude lll issues for long lines containing URLs or JSON tags
+    - linters:
+        - lll
+      source: "^\\s*(//.*)?$" # comments
+    
+    - linters:
+        - lll
+      source: "json:\"[^\"]*\"" # JSON tags
+    
+    - linters:
+        - lll
+      source: "https?://" # URLs
+    
+    # Exclude known linter issues
+    - text: "Use of weak random number generator"
+      linters:
+        - gosec
+    
+    - text: "Subprocess launched with variable"
+      linters:
+        - gosec
+    
+    - text: "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked"
+      linters:
+        - errcheck
+    
+    # Ignore magic numbers in tests
+    - path: _test\.go
+      text: "Magic number"
+      linters:
+        - gomnd
+    
+    # Ignore long functions in main.go (CLI handling)
+    - path: cmd/edgar/main\.go
+      linters:
+        - funlen
+        - gocyclo
+    
+    # Ignore complexity in test helper functions
+    - path: pkg/edgar/testutil/
+      linters:
+        - gocyclo
+        - funlen
+
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+# golangci.com configuration
+# https://github.com/golangci/golangci-lint/blob/master/.golangci.example.yml

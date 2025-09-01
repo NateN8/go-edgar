@@ -137,6 +137,7 @@ dev-setup: deps
 	@echo "Setting up development environment..."
 	@echo "Installing development tools..."
 	$(GOGET) github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	$(GOGET) github.com/securego/gosec/v2/cmd/gosec@latest
 
 # Docker build (if needed in the future)
 docker-build:
@@ -191,6 +192,7 @@ help:
 	@echo "  lint           - Run linter"
 	@echo "  vet            - Vet the code"
 	@echo "  validate       - Run full validation (fmt, vet, test)"
+	@echo "  security       - Run security vulnerability check"
 	@echo "  install        - Install binary to GOPATH/bin"
 	@echo "  deps           - Download dependencies"
 	@echo "  tidy           - Tidy go modules"
