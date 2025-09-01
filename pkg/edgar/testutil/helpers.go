@@ -35,13 +35,13 @@ func CaptureOutput(t *testing.T, fn func()) (stdout, stderr string) {
 	// Start goroutines to read from the pipes
 	go func() {
 		var buf bytes.Buffer
-		io.Copy(&buf, stdoutR)
+		_, _ = io.Copy(&buf, stdoutR) // Error handled by checking channel timeout
 		stdoutChan <- buf.String()
 	}()
 
 	go func() {
 		var buf bytes.Buffer
-		io.Copy(&buf, stderrR)
+		_, _ = io.Copy(&buf, stderrR) // Error handled by checking channel timeout
 		stderrChan <- buf.String()
 	}()
 
@@ -49,8 +49,8 @@ func CaptureOutput(t *testing.T, fn func()) (stdout, stderr string) {
 	fn()
 
 	// Close the write ends of the pipes
-	stdoutW.Close()
-	stderrW.Close()
+	_ = stdoutW.Close() // Ignoring error for test cleanup
+	_ = stderrW.Close() // Ignoring error for test cleanup
 
 	// Restore original stdout/stderr
 	os.Stdout = originalStdout
@@ -184,13 +184,13 @@ func AssertOrderedByDate(t *testing.T, dates []string, description string) {
 // SetupTestEnvironment sets up common test environment variables
 func SetupTestEnvironment() {
 	// Set any required environment variables for testing
-	os.Setenv("SEC_API_BASE_URL", "https://data.sec.gov")
+	_ = os.Setenv("SEC_API_BASE_URL", "https://data.sec.gov") // Ignoring error for test setup
 }
 
 // CleanupTestEnvironment cleans up test environment
 func CleanupTestEnvironment() {
 	// Clean up any test-specific environment variables
-	os.Unsetenv("SEC_API_BASE_URL")
+	_ = os.Unsetenv("SEC_API_BASE_URL") // Ignoring error for test cleanup
 }
 
 // CreateTempFile creates a temporary file for testing
@@ -206,7 +206,7 @@ func CreateTempFile(t *testing.T, content string) *os.File {
 
 	// Register cleanup
 	t.Cleanup(func() {
-		os.Remove(tmpfile.Name())
+		_ = os.Remove(tmpfile.Name()) // Ignoring error for test cleanup
 	})
 
 	// Reopen for reading

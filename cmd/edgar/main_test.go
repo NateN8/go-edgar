@@ -38,14 +38,14 @@ func captureOutput(f func()) (stdout, stderr string) {
 	// Read stdout
 	go func() {
 		var buf bytes.Buffer
-		buf.ReadFrom(stdoutReader)
+		_, _ = buf.ReadFrom(stdoutReader) // Error handled by checking channel timeout
 		stdoutChan <- buf.String()
 	}()
 
 	// Read stderr
 	go func() {
 		var buf bytes.Buffer
-		buf.ReadFrom(stderrReader)
+		_, _ = buf.ReadFrom(stderrReader) // Error handled by checking channel timeout
 		stderrChan <- buf.String()
 	}()
 
@@ -53,8 +53,8 @@ func captureOutput(f func()) (stdout, stderr string) {
 	f()
 
 	// Close writers
-	stdoutWriter.Close()
-	stderrWriter.Close()
+	_ = stdoutWriter.Close() // Ignoring error for test cleanup
+	_ = stderrWriter.Close() // Ignoring error for test cleanup
 
 	// Restore stdout/stderr
 	os.Stdout = originalStdout
@@ -280,7 +280,7 @@ func TestUsageOutput(t *testing.T) {
 
 	_, stderr := captureOutput(func() {
 		defer func() {
-			recover() // Catch the panic from os.Exit
+			_ = recover() // Catch the panic from os.Exit
 		}()
 
 		var cik string
@@ -326,7 +326,7 @@ func TestBinaryExecution(t *testing.T) {
 
 	// Clean up after test
 	defer func() {
-		os.Remove("../../bin/edgar-test")
+		_ = os.Remove("../../bin/edgar-test") // Ignoring error for test cleanup
 	}()
 
 	tests := []struct {

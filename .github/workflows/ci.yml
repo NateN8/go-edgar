@@ -110,7 +110,7 @@ jobs:
         go-version: 1.23
     
     - name: Run Gosec Security Scanner
-      uses: securecodewarrior/github-action-gosec@master
+      uses: securego/github-action-gosec@master
       with:
         args: './...'
 

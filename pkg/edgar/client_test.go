@@ -24,7 +24,7 @@ func createMockServer(response string, statusCode int) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(statusCode)
-		fmt.Fprint(w, response)
+		_, _ = fmt.Fprint(w, response) // Ignoring write error in test
 	}))
 }
 

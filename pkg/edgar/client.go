@@ -49,7 +49,7 @@ func (c *Client) makeRequest(url string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error making request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }() // Ignoring close error
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
@@ -64,7 +64,7 @@ func (c *Client) makeRequest(url string) ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error creating gzip reader: %w", err)
 		}
-		defer gzipReader.Close()
+		defer func() { _ = gzipReader.Close() }() // Ignoring close error
 		reader = gzipReader
 	}
 
@@ -505,11 +505,12 @@ func (c *Client) findValueForDate(dataArray []interface{}, targetDate string) fl
 					}
 
 					// Prefer 10-Q forms for quarterly analysis
-					if form == "10-Q" {
-						score += 50
-					} else if form == "10-K" {
-						score += 10 // Lower priority for annual forms
-					}
+											switch form {
+						case "10-Q":
+							score += 50
+						case "10-K":
+							score += 10 // Lower priority for annual forms
+						}
 
 					// Prefer more recent dates if no exact match
 					if date <= targetDate && date > bestDate {

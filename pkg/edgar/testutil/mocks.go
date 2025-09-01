@@ -389,14 +389,14 @@ func CreateMockServer(responses map[string]string) *httptest.Server {
 			if contains(path, pattern) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprint(w, response)
+				_, _ = fmt.Fprint(w, response) // Ignoring write error in test
 				return
 			}
 		}
 
 		// Default 404 response
 		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprint(w, `{"error": "not found"}`)
+		_, _ = fmt.Fprint(w, `{"error": "not found"}`) // Ignoring write error in test
 	}))
 }
 
