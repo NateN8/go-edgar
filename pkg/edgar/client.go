@@ -505,12 +505,12 @@ func (c *Client) findValueForDate(dataArray []interface{}, targetDate string) fl
 					}
 
 					// Prefer 10-Q forms for quarterly analysis
-											switch form {
-						case "10-Q":
-							score += 50
-						case "10-K":
-							score += 10 // Lower priority for annual forms
-						}
+					switch form {
+					case "10-Q":
+						score += 50
+					case "10-K":
+						score += 10 // Lower priority for annual forms
+					}
 
 					// Prefer more recent dates if no exact match
 					if date <= targetDate && date > bestDate {
