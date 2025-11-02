@@ -13,22 +13,27 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Mock data for testing
+const (
+	// Form10Q represents the 10-Q quarterly report form type.
+	Form10Q = "10-Q"
+)
+
+// Mock data for testing.
 const (
 	mockCIK         = "0000320193"
 	mockCompanyName = "Test Company Inc."
 )
 
-// Helper function to create a mock server
+// Helper function to create a mock server.
 func createMockServer(response string, statusCode int) *httptest.Server {
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(statusCode)
 		_, _ = fmt.Fprint(w, response) // Ignoring write error in test
 	}))
 }
 
-// mockTransport is a custom HTTP transport for testing that redirects requests to a test server
+// mockTransport is a custom HTTP transport for testing that redirects requests to a test server.
 type mockTransport struct {
 	originalURL string
 	testURL     string
@@ -53,7 +58,7 @@ func (t *mockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return http.DefaultTransport.RoundTrip(req)
 }
 
-// Mock company facts response
+// Mock company facts response.
 func getMockCompanyFacts() string {
 	return `{
 		"cik": "320193",
@@ -142,7 +147,7 @@ func getMockCompanyFacts() string {
 	}`
 }
 
-// Mock company submissions response
+// Mock company submissions response.
 func getMockCompanySubmissions() string {
 	return `{
 		"cik": "320193",
@@ -624,7 +629,7 @@ func TestFreeCashFlowCalculation(t *testing.T) {
 	assert.Equal(t, expectedFCF, metrics.FreeCashFlow)
 }
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkClient_parseFilings(b *testing.B) {
 	client := NewClient()
 
@@ -649,7 +654,7 @@ func BenchmarkClient_parseFilings(b *testing.B) {
 		recentData["accessionNumber"][i] = fmt.Sprintf("0000320193-24-%06d", i)
 		recentData["filingDate"][i] = "2024-02-01"
 		recentData["reportDate"][i] = "2023-12-30"
-		recentData["form"][i] = "10-Q"
+		recentData["form"][i] = Form10Q
 		recentData["fileNumber"][i] = "001-36743"
 		recentData["filmNumber"][i] = fmt.Sprintf("2457612%d", i)
 		recentData["items"][i] = ""

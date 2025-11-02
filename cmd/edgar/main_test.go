@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -13,13 +14,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Helper function to reset flags for testing
+// Helper function to reset flags for testing.
 func resetFlags() {
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 }
 
-// Helper function to capture stdout/stderr
-func captureOutput(f func()) (stdout, stderr string) {
+// Helper function to capture stdout/stderr.
+func captureOutput(f func()) (_, stderr string) {
 	originalStdout := os.Stdout
 	originalStderr := os.Stderr
 
@@ -312,14 +313,14 @@ func TestUsageOutput(t *testing.T) {
 	assert.Contains(t, stderr, "Examples:")
 }
 
-// Integration test for the built binary
+// Integration test for the built binary.
 func TestBinaryExecution(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping binary execution test in short mode")
 	}
 
 	// Build the binary first
-	buildCmd := exec.Command("go", "build", "-o", "../../bin/edgar-test", ".")
+	buildCmd := exec.CommandContext(context.Background(), "go", "build", "-o", "../../bin/edgar-test", ".")
 	buildCmd.Dir = "."
 	err := buildCmd.Run()
 	require.NoError(t, err, "failed to build binary")
@@ -364,7 +365,7 @@ func TestBinaryExecution(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := exec.Command("../../bin/edgar-test", tt.args...)
+			cmd := exec.CommandContext(context.Background(), "../../bin/edgar-test", tt.args...)
 			output, err := cmd.CombinedOutput()
 			outputStr := string(output)
 
@@ -379,7 +380,7 @@ func TestBinaryExecution(t *testing.T) {
 	}
 }
 
-// Test JSON output format
+// Test JSON output format.
 func TestJSONOutput(t *testing.T) {
 	// Create mock data structures to test JSON marshaling
 	cashFlowMetrics := CashFlowMetrics{
@@ -440,7 +441,7 @@ func TestJSONOutput(t *testing.T) {
 	})
 }
 
-// Test output formatting
+// Test output formatting.
 func TestOutputFormatting(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -485,7 +486,7 @@ func TestOutputFormatting(t *testing.T) {
 	}
 }
 
-// Test percentage formatting for EBITDA margin
+// Test percentage formatting for EBITDA margin.
 func TestPercentageFormatting(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -522,7 +523,7 @@ func TestPercentageFormatting(t *testing.T) {
 	}
 }
 
-// Import the types from the edgar package for testing
+// Import the types from the edgar package for testing.
 type CashFlowMetrics struct {
 	CompanyName                    string  `json:"companyName"`
 	CIK                            string  `json:"cik"`

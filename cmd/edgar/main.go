@@ -1,3 +1,4 @@
+// Package main provides the EDGAR CLI tool for analyzing SEC filings.
 package main
 
 import (
@@ -45,7 +46,8 @@ func main() {
 
 	client := edgar.NewClient()
 
-	if ebitdaQuarterly {
+	switch {
+	case ebitdaQuarterly:
 		// Get quarterly EBITDA analysis for 4 most recent 10-Q filings
 		fmt.Printf("Fetching 4 most recent 10-Q filings and EBITDA metrics for CIK: %s\n", cik)
 
@@ -114,7 +116,7 @@ func main() {
 			log.Fatalf("Error encoding JSON response: %v", err)
 		}
 
-	} else if ebitda {
+	case ebitda:
 		// Single EBITDA analysis
 		fmt.Printf("Fetching most recent 10-Q filing and calculating EBITDA for CIK: %s\n", cik)
 
@@ -168,7 +170,7 @@ func main() {
 			log.Fatalf("Error encoding JSON response: %v", err)
 		}
 
-	} else if quarterly {
+	case quarterly:
 		// Get quarterly analysis for 4 most recent 10-Q filings
 		fmt.Printf("Fetching 4 most recent 10-Q filings and cash flow metrics for CIK: %s\n", cik)
 
@@ -228,7 +230,7 @@ func main() {
 			log.Fatalf("Error encoding JSON response: %v", err)
 		}
 
-	} else {
+	default:
 		// Original single 10-Q analysis
 		fmt.Printf("Fetching most recent 10-Q filing for CIK: %s\n", cik)
 

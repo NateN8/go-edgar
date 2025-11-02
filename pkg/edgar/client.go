@@ -1,3 +1,4 @@
+// Package edgar provides a client for accessing SEC EDGAR database API.
 package edgar
 
 import (
@@ -11,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"context"
 )
 
 const (
@@ -18,13 +20,13 @@ const (
 	userAgent = "Your Company Name yourname@example.com" // Replace with your details
 )
 
-// Client represents an EDGAR API client
+// Client represents an EDGAR API client.
 type Client struct {
 	httpClient *http.Client
 	userAgent  string
 }
 
-// NewClient creates a new EDGAR API client
+// NewClient creates a new EDGAR API client.
 func NewClient() *Client {
 	return &Client{
 		httpClient: &http.Client{
@@ -34,9 +36,9 @@ func NewClient() *Client {
 	}
 }
 
-// makeRequest is a helper function to make HTTP requests with proper headers and gzip handling
+// makeRequest is a helper function to make HTTP requests with proper headers and gzip handling.
 func (c *Client) makeRequest(url string) ([]byte, error) {
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(context.Background(), "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
 	}
@@ -53,6 +55,7 @@ func (c *Client) makeRequest(url string) ([]byte, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
+
 		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
 	}
 
@@ -76,7 +79,7 @@ func (c *Client) makeRequest(url string) ([]byte, error) {
 	return body, nil
 }
 
-// CompanyFacts represents the company facts response
+// CompanyFacts represents the company facts response.
 type CompanyFacts struct {
 	// Add fields based on the API response structure
 	CIK    interface{}            `json:"cik"` // Can be string or number
@@ -84,7 +87,7 @@ type CompanyFacts struct {
 	Facts  map[string]interface{} `json:"facts"`
 }
 
-// GetCIKString returns the CIK as a string
+// GetCIKString returns the CIK as a string.
 func (cf *CompanyFacts) GetCIKString() string {
 	switch v := cf.CIK.(type) {
 	case string:
@@ -100,7 +103,7 @@ func (cf *CompanyFacts) GetCIKString() string {
 	}
 }
 
-// CompanySubmissions represents the company submissions response
+// CompanySubmissions represents the company submissions response.
 type CompanySubmissions struct {
 	CIK                      string   `json:"cik"`
 	EntityType               string   `json:"entityType"`
@@ -139,6 +142,7 @@ type CompanySubmissions struct {
 	} `json:"filings"`
 }
 
+// Address represents a mailing or business address structure.
 type Address struct {
 	Street1            string `json:"street1"`
 	Street2            string `json:"street2"`
@@ -148,7 +152,7 @@ type Address struct {
 	StateOrCountryDesc string `json:"stateOrCountryDescription"`
 }
 
-// Filing represents a single filing
+// Filing represents a single filing.
 type Filing struct {
 	AccessionNumber string
 	FilingDate      string
@@ -164,7 +168,7 @@ type Filing struct {
 	PrimaryDocDesc  string
 }
 
-// CashFlowMetrics represents the parsed cash flow metrics
+// CashFlowMetrics represents the parsed cash flow metrics.
 type CashFlowMetrics struct {
 	CompanyName                    string  `json:"companyName"`
 	CIK                            string  `json:"cik"`
@@ -177,14 +181,14 @@ type CashFlowMetrics struct {
 	AccessionNumber                string  `json:"accessionNumber"`
 }
 
-// QuarterlyCashFlowAnalysis represents cash flow metrics for multiple quarters
+// QuarterlyCashFlowAnalysis represents cash flow metrics for multiple quarters.
 type QuarterlyCashFlowAnalysis struct {
 	CompanyName string            `json:"companyName"`
 	CIK         string            `json:"cik"`
 	Quarters    []CashFlowMetrics `json:"quarters"`
 }
 
-// EBITDAMetrics represents the calculated EBITDA metrics
+// EBITDAMetrics represents the calculated EBITDA metrics.
 type EBITDAMetrics struct {
 	CompanyName                 string  `json:"companyName"`
 	CIK                         string  `json:"cik"`
@@ -201,14 +205,14 @@ type EBITDAMetrics struct {
 	EBITDAMargin                float64 `json:"ebitdaMargin"` // EBITDA / Revenue as percentage
 }
 
-// QuarterlyEBITDAAnalysis represents EBITDA metrics for multiple quarters
+// QuarterlyEBITDAAnalysis represents EBITDA metrics for multiple quarters.
 type QuarterlyEBITDAAnalysis struct {
 	CompanyName string          `json:"companyName"`
 	CIK         string          `json:"cik"`
 	Quarters    []EBITDAMetrics `json:"quarters"`
 }
 
-// GetCompanyFacts retrieves company facts for a given CIK
+// GetCompanyFacts retrieves company facts for a given CIK.
 func (c *Client) GetCompanyFacts(cik string) (*CompanyFacts, error) {
 	url := fmt.Sprintf("%s/api/xbrl/companyfacts/CIK%s.json", baseURL, cik)
 
@@ -225,7 +229,7 @@ func (c *Client) GetCompanyFacts(cik string) (*CompanyFacts, error) {
 	return &facts, nil
 }
 
-// GetCompanySubmissions retrieves company submissions for a given CIK
+// GetCompanySubmissions retrieves company submissions for a given CIK.
 func (c *Client) GetCompanySubmissions(cik string) (*CompanySubmissions, error) {
 	url := fmt.Sprintf("%s/submissions/CIK%s.json", baseURL, cik)
 
@@ -242,7 +246,7 @@ func (c *Client) GetCompanySubmissions(cik string) (*CompanySubmissions, error) 
 	return &submissions, nil
 }
 
-// GetMostRecent10Q finds the most recent 10-Q filing from company submissions
+// GetMostRecent10Q finds the most recent 10-Q filing from company submissions.
 func (c *Client) GetMostRecent10Q(cik string) (*Filing, error) {
 	submissions, err := c.GetCompanySubmissions(cik)
 	if err != nil {
@@ -272,7 +276,7 @@ func (c *Client) GetMostRecent10Q(cik string) (*Filing, error) {
 	return &tenQFilings[0], nil
 }
 
-// parseFilings converts the submissions recent filings map to Filing structs
+// parseFilings converts the submissions recent filings map to Filing structs.
 func (c *Client) parseFilings(recent map[string][]interface{}) []Filing {
 	var filings []Filing
 
@@ -303,7 +307,7 @@ func (c *Client) parseFilings(recent map[string][]interface{}) []Filing {
 	return filings
 }
 
-// toString safely converts interface{} to string
+// toString safely converts interface{} to string.
 func (c *Client) toString(v interface{}) string {
 	if v == nil {
 		return ""
@@ -319,13 +323,14 @@ func (c *Client) toString(v interface{}) string {
 		if val {
 			return "1"
 		}
+
 		return "0"
 	default:
 		return fmt.Sprintf("%v", val)
 	}
 }
 
-// GetMostRecent4TenQs finds the 4 most recent 10-Q filings from company submissions
+// GetMostRecent4TenQs finds the 4 most recent 10-Q filings from company submissions.
 func (c *Client) GetMostRecent4TenQs(cik string) ([]Filing, error) {
 	submissions, err := c.GetCompanySubmissions(cik)
 	if err != nil {
@@ -361,7 +366,7 @@ func (c *Client) GetMostRecent4TenQs(cik string) ([]Filing, error) {
 	return tenQFilings[:count], nil
 }
 
-// GetQuarterlyCashFlowAnalysis retrieves cash flow metrics for the 4 most recent 10-Q filings
+// GetQuarterlyCashFlowAnalysis retrieves cash flow metrics for the 4 most recent 10-Q filings.
 func (c *Client) GetQuarterlyCashFlowAnalysis(cik string) (*QuarterlyCashFlowAnalysis, error) {
 	// Get the 4 most recent 10-Q filings
 	filings, err := c.GetMostRecent4TenQs(cik)
@@ -386,6 +391,7 @@ func (c *Client) GetQuarterlyCashFlowAnalysis(cik string) (*QuarterlyCashFlowAna
 		metrics, err := c.ParseCashFlowMetricsFromFacts(facts, &filing)
 		if err != nil {
 			log.Printf("Warning: Could not parse cash flow metrics for filing %s: %v", filing.AccessionNumber, err)
+
 			continue
 		}
 		analysis.Quarters = append(analysis.Quarters, *metrics)
@@ -398,7 +404,7 @@ func (c *Client) GetQuarterlyCashFlowAnalysis(cik string) (*QuarterlyCashFlowAna
 	return analysis, nil
 }
 
-// ParseCashFlowMetrics extracts cash flow metrics from a 10-Q filing
+// ParseCashFlowMetrics extracts cash flow metrics from a 10-Q filing.
 func (c *Client) ParseCashFlowMetrics(cik string, filing *Filing) (*CashFlowMetrics, error) {
 	// Get company facts which contain the financial data
 	facts, err := c.GetCompanyFacts(cik)
@@ -426,7 +432,7 @@ func (c *Client) ParseCashFlowMetrics(cik string, filing *Filing) (*CashFlowMetr
 	return metrics, nil
 }
 
-// extractCashFlowData extracts specific cash flow values from company facts
+// extractCashFlowData extracts specific cash flow values from company facts.
 func (c *Client) extractCashFlowData(facts *CompanyFacts, metrics *CashFlowMetrics, reportDate string) error {
 	// Navigate through the facts structure to find cash flow data
 	factsMap := facts.Facts
@@ -462,8 +468,10 @@ func (c *Client) extractCashFlowData(facts *CompanyFacts, metrics *CashFlowMetri
 	return nil
 }
 
-// extractMetric tries to extract a metric value using multiple possible tag names
-func (c *Client) extractMetric(usGaap map[string]interface{}, tagNames []string, result *float64, reportDate string) error {
+// extractMetric tries to extract a metric value using multiple possible tag names.
+func (c *Client) extractMetric(
+	usGaap map[string]interface{}, tagNames []string, result *float64, reportDate string,
+) error {
 	for _, tagName := range tagNames {
 		if concept, ok := usGaap[tagName].(map[string]interface{}); ok {
 			if units, ok := concept["units"].(map[string]interface{}); ok {
@@ -483,10 +491,11 @@ func (c *Client) extractMetric(usGaap map[string]interface{}, tagNames []string,
 			}
 		}
 	}
+
 	return fmt.Errorf("metric not found with any of the provided tag names: %v", tagNames)
 }
 
-// findValueForDate finds the value closest to the given report date
+// findValueForDate finds the value closest to the given report date.
 func (c *Client) findValueForDate(dataArray []interface{}, targetDate string) float64 {
 	var bestValue float64
 	var bestDate string
@@ -539,7 +548,7 @@ func (c *Client) findValueForDate(dataArray []interface{}, targetDate string) fl
 	return bestValue
 }
 
-// ParseCashFlowMetricsFromFacts extracts cash flow metrics using pre-fetched company facts
+// ParseCashFlowMetricsFromFacts extracts cash flow metrics using pre-fetched company facts.
 func (c *Client) ParseCashFlowMetricsFromFacts(facts *CompanyFacts, filing *Filing) (*CashFlowMetrics, error) {
 	metrics := &CashFlowMetrics{
 		CompanyName:     facts.Entity,
@@ -561,7 +570,7 @@ func (c *Client) ParseCashFlowMetricsFromFacts(facts *CompanyFacts, filing *Fili
 	return metrics, nil
 }
 
-// CompanyConcept represents a specific concept for a company
+// CompanyConcept represents a specific concept for a company.
 type CompanyConcept struct {
 	CIK      string `json:"cik"`
 	Taxonomy string `json:"taxonomy"`
@@ -574,7 +583,7 @@ type CompanyConcept struct {
 	} `json:"units"`
 }
 
-// GetCompanyConcept retrieves a specific concept for a company
+// GetCompanyConcept retrieves a specific concept for a company.
 func (c *Client) GetCompanyConcept(cik, taxonomy, tag string) (*CompanyConcept, error) {
 	url := fmt.Sprintf("%s/api/xbrl/companyconcept/CIK%s/%s/%s.json", baseURL, cik, taxonomy, tag)
 
@@ -591,7 +600,7 @@ func (c *Client) GetCompanyConcept(cik, taxonomy, tag string) (*CompanyConcept, 
 	return &concept, nil
 }
 
-// ParseEBITDAMetrics extracts EBITDA components from a 10-Q filing
+// ParseEBITDAMetrics extracts EBITDA components from a 10-Q filing.
 func (c *Client) ParseEBITDAMetrics(cik string, filing *Filing) (*EBITDAMetrics, error) {
 	// Get company facts which contain the financial data
 	facts, err := c.GetCompanyFacts(cik)
@@ -602,7 +611,7 @@ func (c *Client) ParseEBITDAMetrics(cik string, filing *Filing) (*EBITDAMetrics,
 	return c.ParseEBITDAMetricsFromFacts(facts, filing)
 }
 
-// ParseEBITDAMetricsFromFacts extracts EBITDA components using pre-fetched company facts
+// ParseEBITDAMetricsFromFacts extracts EBITDA components using pre-fetched company facts.
 func (c *Client) ParseEBITDAMetricsFromFacts(facts *CompanyFacts, filing *Filing) (*EBITDAMetrics, error) {
 	metrics := &EBITDAMetrics{
 		CompanyName:     facts.Entity,
@@ -619,7 +628,8 @@ func (c *Client) ParseEBITDAMetricsFromFacts(facts *CompanyFacts, filing *Filing
 	}
 
 	// Calculate EBITDA
-	metrics.EBITDA = metrics.NetIncome + metrics.InterestExpense + metrics.IncomeTaxExpense + metrics.DepreciationAndAmortization
+	metrics.EBITDA = metrics.NetIncome + metrics.InterestExpense +
+		metrics.IncomeTaxExpense + metrics.DepreciationAndAmortization
 
 	// Calculate EBITDA Margin (as percentage)
 	if metrics.Revenue != 0 {
@@ -632,7 +642,7 @@ func (c *Client) ParseEBITDAMetricsFromFacts(facts *CompanyFacts, filing *Filing
 	return metrics, nil
 }
 
-// extractEBITDAData extracts specific EBITDA components from company facts
+// extractEBITDAData extracts specific EBITDA components from company facts.
 func (c *Client) extractEBITDAData(facts *CompanyFacts, metrics *EBITDAMetrics, reportDate string) error {
 	// Navigate through the facts structure to find financial data
 	factsMap := facts.Facts
@@ -720,7 +730,7 @@ func (c *Client) extractEBITDAData(facts *CompanyFacts, metrics *EBITDAMetrics, 
 	return nil
 }
 
-// GetQuarterlyEBITDAAnalysis retrieves EBITDA metrics for the 4 most recent 10-Q filings
+// GetQuarterlyEBITDAAnalysis retrieves EBITDA metrics for the 4 most recent 10-Q filings.
 func (c *Client) GetQuarterlyEBITDAAnalysis(cik string) (*QuarterlyEBITDAAnalysis, error) {
 	// Get the 4 most recent 10-Q filings
 	filings, err := c.GetMostRecent4TenQs(cik)
@@ -745,6 +755,7 @@ func (c *Client) GetQuarterlyEBITDAAnalysis(cik string) (*QuarterlyEBITDAAnalysi
 		metrics, err := c.ParseEBITDAMetricsFromFacts(facts, &filing)
 		if err != nil {
 			log.Printf("Warning: Could not parse EBITDA metrics for filing %s: %v", filing.AccessionNumber, err)
+
 			continue
 		}
 		analysis.Quarters = append(analysis.Quarters, *metrics)
