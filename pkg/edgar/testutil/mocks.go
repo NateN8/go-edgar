@@ -9,7 +9,7 @@ import (
 	"github.com/natedogg/edgar/pkg/edgar"
 )
 
-// MockClient provides a mock implementation of the EDGAR client for testing
+// MockClient provides a mock implementation of the EDGAR client for testing.
 type MockClient struct {
 	CompanyFactsResponse   *edgar.CompanyFacts
 	CompanySubmissionsResp *edgar.CompanySubmissions
@@ -21,35 +21,38 @@ type MockClient struct {
 	ErrorToReturn          error
 }
 
-// GetCompanyFacts returns the mocked company facts response
-func (m *MockClient) GetCompanyFacts(cik string) (*edgar.CompanyFacts, error) {
+// GetCompanyFacts returns the mocked company facts response.
+func (m *MockClient) GetCompanyFacts(_ string) (*edgar.CompanyFacts, error) {
 	if m.ErrorToReturn != nil {
 		return nil, m.ErrorToReturn
 	}
+
 	return m.CompanyFactsResponse, nil
 }
 
-// GetCompanySubmissions returns the mocked company submissions response
-func (m *MockClient) GetCompanySubmissions(cik string) (*edgar.CompanySubmissions, error) {
+// GetCompanySubmissions returns the mocked company submissions response.
+func (m *MockClient) GetCompanySubmissions(_ string) (*edgar.CompanySubmissions, error) {
 	if m.ErrorToReturn != nil {
 		return nil, m.ErrorToReturn
 	}
+
 	return m.CompanySubmissionsResp, nil
 }
 
-// GetMostRecent10Q returns the first filing from the mocked filings response
-func (m *MockClient) GetMostRecent10Q(cik string) (*edgar.Filing, error) {
+// GetMostRecent10Q returns the first filing from the mocked filings response.
+func (m *MockClient) GetMostRecent10Q(_ string) (*edgar.Filing, error) {
 	if m.ErrorToReturn != nil {
 		return nil, m.ErrorToReturn
 	}
 	if len(m.FilingsResp) == 0 {
 		return nil, fmt.Errorf("no 10-Q filings found")
 	}
+
 	return &m.FilingsResp[0], nil
 }
 
-// GetMostRecent4TenQs returns up to 4 filings from the mocked filings response
-func (m *MockClient) GetMostRecent4TenQs(cik string) ([]edgar.Filing, error) {
+// GetMostRecent4TenQs returns up to 4 filings from the mocked filings response.
+func (m *MockClient) GetMostRecent4TenQs(_ string) ([]edgar.Filing, error) {
 	if m.ErrorToReturn != nil {
 		return nil, m.ErrorToReturn
 	}
@@ -62,47 +65,51 @@ func (m *MockClient) GetMostRecent4TenQs(cik string) ([]edgar.Filing, error) {
 	return m.FilingsResp[:count], nil
 }
 
-// ParseCashFlowMetrics returns the mocked cash flow metrics response
-func (m *MockClient) ParseCashFlowMetrics(cik string, filing *edgar.Filing) (*edgar.CashFlowMetrics, error) {
+// ParseCashFlowMetrics returns the mocked cash flow metrics response.
+func (m *MockClient) ParseCashFlowMetrics(_ string, _ *edgar.Filing) (*edgar.CashFlowMetrics, error) {
 	if m.ErrorToReturn != nil {
 		return nil, m.ErrorToReturn
 	}
+
 	return m.CashFlowMetricsResp, nil
 }
 
-// ParseEBITDAMetrics returns the mocked EBITDA metrics response
-func (m *MockClient) ParseEBITDAMetrics(cik string, filing *edgar.Filing) (*edgar.EBITDAMetrics, error) {
+// ParseEBITDAMetrics returns the mocked EBITDA metrics response.
+func (m *MockClient) ParseEBITDAMetrics(_ string, _ *edgar.Filing) (*edgar.EBITDAMetrics, error) {
 	if m.ErrorToReturn != nil {
 		return nil, m.ErrorToReturn
 	}
+
 	return m.EBITDAMetricsResp, nil
 }
 
-// GetQuarterlyCashFlowAnalysis returns the mocked quarterly cash flow analysis
-func (m *MockClient) GetQuarterlyCashFlowAnalysis(cik string) (*edgar.QuarterlyCashFlowAnalysis, error) {
+// GetQuarterlyCashFlowAnalysis returns the mocked quarterly cash flow analysis.
+func (m *MockClient) GetQuarterlyCashFlowAnalysis(_ string) (*edgar.QuarterlyCashFlowAnalysis, error) {
 	if m.ErrorToReturn != nil {
 		return nil, m.ErrorToReturn
 	}
+
 	return m.QuarterlyCashFlowResp, nil
 }
 
-// GetQuarterlyEBITDAAnalysis returns the mocked quarterly EBITDA analysis
-func (m *MockClient) GetQuarterlyEBITDAAnalysis(cik string) (*edgar.QuarterlyEBITDAAnalysis, error) {
+// GetQuarterlyEBITDAAnalysis returns the mocked quarterly EBITDA analysis.
+func (m *MockClient) GetQuarterlyEBITDAAnalysis(_ string) (*edgar.QuarterlyEBITDAAnalysis, error) {
 	if m.ErrorToReturn != nil {
 		return nil, m.ErrorToReturn
 	}
+
 	return m.QuarterlyEBITDAResp, nil
 }
 
-// TestDataProvider provides commonly used test data
+// TestDataProvider provides commonly used test data.
 type TestDataProvider struct{}
 
-// NewTestDataProvider creates a new test data provider
+// NewTestDataProvider creates a new test data provider.
 func NewTestDataProvider() *TestDataProvider {
 	return &TestDataProvider{}
 }
 
-// GetMockCompanyFacts returns mock company facts data
+// GetMockCompanyFacts returns mock company facts data.
 func (p *TestDataProvider) GetMockCompanyFacts() *edgar.CompanyFacts {
 	return &edgar.CompanyFacts{
 		CIK:    "0000320193",
@@ -191,7 +198,7 @@ func (p *TestDataProvider) GetMockCompanyFacts() *edgar.CompanyFacts {
 	}
 }
 
-// GetMockCompanySubmissions returns mock company submissions data
+// GetMockCompanySubmissions returns mock company submissions data.
 func (p *TestDataProvider) GetMockCompanySubmissions() *edgar.CompanySubmissions {
 	return &edgar.CompanySubmissions{
 		CIK:  "0000320193",
@@ -206,7 +213,9 @@ func (p *TestDataProvider) GetMockCompanySubmissions() *edgar.CompanySubmissions
 			} `json:"files"`
 		}{
 			Recent: map[string][]interface{}{
-				"accessionNumber":       {"0000320193-24-000007", "0000320193-24-000006", "0000320193-24-000005", "0000320193-24-000004"},
+				"accessionNumber": {
+					"0000320193-24-000007", "0000320193-24-000006",
+					"0000320193-24-000005", "0000320193-24-000004"},
 				"filingDate":            {"2024-02-01", "2023-11-02", "2023-08-03", "2023-05-04"},
 				"reportDate":            {"2023-12-30", "2023-09-30", "2023-06-30", "2023-03-31"},
 				"form":                  {"10-Q", "10-Q", "10-Q", "10-Q"},
@@ -223,7 +232,7 @@ func (p *TestDataProvider) GetMockCompanySubmissions() *edgar.CompanySubmissions
 	}
 }
 
-// GetMockFilings returns mock filing data
+// GetMockFilings returns mock filing data.
 func (p *TestDataProvider) GetMockFilings() []edgar.Filing {
 	return []edgar.Filing{
 		{
@@ -285,7 +294,7 @@ func (p *TestDataProvider) GetMockFilings() []edgar.Filing {
 	}
 }
 
-// GetMockCashFlowMetrics returns mock cash flow metrics
+// GetMockCashFlowMetrics returns mock cash flow metrics.
 func (p *TestDataProvider) GetMockCashFlowMetrics() *edgar.CashFlowMetrics {
 	return &edgar.CashFlowMetrics{
 		CompanyName:                    "Apple Inc.",
@@ -300,7 +309,7 @@ func (p *TestDataProvider) GetMockCashFlowMetrics() *edgar.CashFlowMetrics {
 	}
 }
 
-// GetMockEBITDAMetrics returns mock EBITDA metrics
+// GetMockEBITDAMetrics returns mock EBITDA metrics.
 func (p *TestDataProvider) GetMockEBITDAMetrics() *edgar.EBITDAMetrics {
 	return &edgar.EBITDAMetrics{
 		CompanyName:                 "Apple Inc.",
@@ -319,7 +328,7 @@ func (p *TestDataProvider) GetMockEBITDAMetrics() *edgar.EBITDAMetrics {
 	}
 }
 
-// GetMockQuarterlyCashFlowAnalysis returns mock quarterly cash flow analysis
+// GetMockQuarterlyCashFlowAnalysis returns mock quarterly cash flow analysis.
 func (p *TestDataProvider) GetMockQuarterlyCashFlowAnalysis() *edgar.QuarterlyCashFlowAnalysis {
 	filings := p.GetMockFilings()
 	quarters := make([]edgar.CashFlowMetrics, len(filings))
@@ -345,7 +354,7 @@ func (p *TestDataProvider) GetMockQuarterlyCashFlowAnalysis() *edgar.QuarterlyCa
 	}
 }
 
-// GetMockQuarterlyEBITDAAnalysis returns mock quarterly EBITDA analysis
+// GetMockQuarterlyEBITDAAnalysis returns mock quarterly EBITDA analysis.
 func (p *TestDataProvider) GetMockQuarterlyEBITDAAnalysis() *edgar.QuarterlyEBITDAAnalysis {
 	filings := p.GetMockFilings()
 	quarters := make([]edgar.EBITDAMetrics, len(filings))
@@ -379,7 +388,7 @@ func (p *TestDataProvider) GetMockQuarterlyEBITDAAnalysis() *edgar.QuarterlyEBIT
 	}
 }
 
-// CreateMockServer creates an HTTP test server with predefined responses
+// CreateMockServer creates an HTTP test server with predefined responses.
 func CreateMockServer(responses map[string]string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
@@ -390,6 +399,7 @@ func CreateMockServer(responses map[string]string) *httptest.Server {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
 				_, _ = fmt.Fprint(w, response) // Ignoring write error in test
+
 				return
 			}
 		}
@@ -400,38 +410,41 @@ func CreateMockServer(responses map[string]string) *httptest.Server {
 	}))
 }
 
-// contains checks if a string contains a substring
+// contains checks if a string contains a substring.
 func contains(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || (len(s) > len(substr) &&
 		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
 			indexOf(s, substr) >= 0)))
 }
 
-// indexOf returns the index of substr in s, or -1 if not found
+// indexOf returns the index of substr in s, or -1 if not found.
 func indexOf(s, substr string) int {
 	for i := 0; i <= len(s)-len(substr); i++ {
 		if s[i:i+len(substr)] == substr {
 			return i
 		}
 	}
+
 	return -1
 }
 
-// GetMockCompanyFactsJSON returns JSON representation of mock company facts
+// GetMockCompanyFactsJSON returns JSON representation of mock company facts.
 func (p *TestDataProvider) GetMockCompanyFactsJSON() string {
 	facts := p.GetMockCompanyFacts()
 	data, _ := json.MarshalIndent(facts, "", "  ")
+
 	return string(data)
 }
 
-// GetMockCompanySubmissionsJSON returns JSON representation of mock company submissions
+// GetMockCompanySubmissionsJSON returns JSON representation of mock company submissions.
 func (p *TestDataProvider) GetMockCompanySubmissionsJSON() string {
 	submissions := p.GetMockCompanySubmissions()
 	data, _ := json.MarshalIndent(submissions, "", "  ")
+
 	return string(data)
 }
 
-// SetupMockClient creates a fully configured mock client for testing
+// SetupMockClient creates a fully configured mock client for testing.
 func SetupMockClient() *MockClient {
 	provider := NewTestDataProvider()
 

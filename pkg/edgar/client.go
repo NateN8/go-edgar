@@ -3,6 +3,7 @@ package edgar
 
 import (
 	"compress/gzip"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,12 +13,13 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"context"
 )
 
 const (
 	baseURL   = "https://data.sec.gov"
 	userAgent = "Your Company Name yourname@example.com" // Replace with your details
+	// Form10Q represents the 10-Q quarterly report form type.
+	Form10Q = "10-Q"
 )
 
 // Client represents an EDGAR API client.
@@ -259,7 +261,7 @@ func (c *Client) GetMostRecent10Q(cik string) (*Filing, error) {
 	// Filter for 10-Q filings and sort by filing date (most recent first)
 	var tenQFilings []Filing
 	for _, filing := range filings {
-		if filing.Form == "10-Q" {
+		if filing.Form == Form10Q {
 			tenQFilings = append(tenQFilings, filing)
 		}
 	}
@@ -343,7 +345,7 @@ func (c *Client) GetMostRecent4TenQs(cik string) ([]Filing, error) {
 	// Filter for 10-Q filings and sort by filing date (most recent first)
 	var tenQFilings []Filing
 	for _, filing := range filings {
-		if filing.Form == "10-Q" {
+		if filing.Form == Form10Q {
 			tenQFilings = append(tenQFilings, filing)
 		}
 	}
@@ -483,6 +485,7 @@ func (c *Client) extractMetric(
 							value := c.findValueForDate(dataArray, reportDate)
 							if value != 0 {
 								*result = value
+
 								return nil
 							}
 						}
@@ -515,7 +518,7 @@ func (c *Client) findValueForDate(dataArray []interface{}, targetDate string) fl
 
 					// Prefer 10-Q forms for quarterly analysis
 					switch form {
-					case "10-Q":
+					case Form10Q:
 						score += 50
 					case "10-K":
 						score += 10 // Lower priority for annual forms

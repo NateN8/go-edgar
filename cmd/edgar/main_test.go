@@ -62,10 +62,10 @@ func captureOutput(f func()) (_, stderr string) {
 	os.Stderr = originalStderr
 
 	// Get output
-	stdout = <-stdoutChan
+	<-stdoutChan // Discard stdout as it's not used
 	stderr = <-stderrChan
 
-	return stdout, stderr
+	return "", stderr
 }
 
 func TestCIKValidation(t *testing.T) {
@@ -365,6 +365,7 @@ func TestBinaryExecution(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			//nolint:gosec // G204: test binary path is hardcoded and safe
 			cmd := exec.CommandContext(context.Background(), "../../bin/edgar-test", tt.args...)
 			output, err := cmd.CombinedOutput()
 			outputStr := string(output)

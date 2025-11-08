@@ -13,10 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const (
-	// Form10Q represents the 10-Q quarterly report form type.
-	Form10Q = "10-Q"
-)
 
 // Mock data for testing.
 const (
@@ -154,7 +150,9 @@ func getMockCompanySubmissions() string {
 		"name": "Apple Inc.",
 		"filings": {
 			"recent": {
-				"accessionNumber": ["0000320193-24-000007", "0000320193-24-000006", "0000320193-24-000005", "0000320193-24-000004", "0000320193-24-000003"],
+				"accessionNumber": [
+					"0000320193-24-000007", "0000320193-24-000006",
+					"0000320193-24-000005", "0000320193-24-000004", "0000320193-24-000003"],
 				"filingDate": ["2024-02-01", "2023-11-02", "2023-08-03", "2023-05-04", "2023-02-02"],
 				"reportDate": ["2023-12-30", "2023-09-30", "2023-06-30", "2023-03-31", "2022-12-31"],
 				"form": ["10-Q", "10-Q", "10-Q", "10-Q", "10-Q"],
@@ -164,7 +162,9 @@ func getMockCompanySubmissions() string {
 				"size": ["100000", "100000", "100000", "100000", "100000"],
 				"isXBRL": [1, 1, 1, 1, 1],
 				"isInlineXBRL": [1, 1, 1, 1, 1],
-				"primaryDocument": ["aapl-20231230.htm", "aapl-20230930.htm", "aapl-20230630.htm", "aapl-20230331.htm", "aapl-20221231.htm"],
+				"primaryDocument": [
+					"aapl-20231230.htm", "aapl-20230930.htm", "aapl-20230630.htm",
+					"aapl-20230331.htm", "aapl-20221231.htm"],
 				"primaryDocDescription": ["10-Q", "10-Q", "10-Q", "10-Q", "10-Q"]
 			}
 		}
@@ -600,7 +600,8 @@ func TestEBITDACalculation(t *testing.T) {
 	}
 
 	// Calculate EBITDA
-	metrics.EBITDA = metrics.NetIncome + metrics.InterestExpense + metrics.IncomeTaxExpense + metrics.DepreciationAndAmortization
+	metrics.EBITDA = metrics.NetIncome + metrics.InterestExpense +
+		metrics.IncomeTaxExpense + metrics.DepreciationAndAmortization
 
 	// Calculate EBITDA Margin
 	if metrics.Revenue != 0 {
@@ -662,7 +663,7 @@ func BenchmarkClient_parseFilings(b *testing.B) {
 		recentData["isXBRL"][i] = 1
 		recentData["isInlineXBRL"][i] = 1
 		recentData["primaryDocument"][i] = "aapl-20231230.htm"
-		recentData["primaryDocDescription"][i] = "10-Q"
+		recentData["primaryDocDescription"][i] = Form10Q
 	}
 
 	b.ResetTimer()

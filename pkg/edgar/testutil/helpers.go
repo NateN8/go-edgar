@@ -1,3 +1,4 @@
+// Package testutil provides testing utilities for the EDGAR package.
 package testutil
 
 import (
@@ -12,8 +13,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// CaptureOutput captures stdout and stderr during function execution
+// CaptureOutput captures stdout and stderr during function execution.
 func CaptureOutput(t *testing.T, fn func()) (stdout, stderr string) {
+	t.Helper()
 	// Save original stdout/stderr
 	originalStdout := os.Stdout
 	originalStderr := os.Stderr
@@ -63,15 +65,17 @@ func CaptureOutput(t *testing.T, fn func()) (stdout, stderr string) {
 	return stdout, stderr
 }
 
-// AssertValidJSON checks if a string is valid JSON
+// AssertValidJSON checks if a string is valid JSON.
 func AssertValidJSON(t *testing.T, jsonStr string) {
+	t.Helper()
 	var js json.RawMessage
 	err := json.Unmarshal([]byte(jsonStr), &js)
 	assert.NoError(t, err, "should be valid JSON")
 }
 
-// AssertContainsJSON checks if JSON string contains expected key-value pairs
+// AssertContainsJSON checks if JSON string contains expected key-value pairs.
 func AssertContainsJSON(t *testing.T, jsonStr string, expectedKeys ...string) {
+	t.Helper()
 	var data map[string]interface{}
 	err := json.Unmarshal([]byte(jsonStr), &data)
 	require.NoError(t, err, "should be valid JSON")
@@ -81,8 +85,9 @@ func AssertContainsJSON(t *testing.T, jsonStr string, expectedKeys ...string) {
 	}
 }
 
-// AssertJSONEquals compares two JSON strings for equality
+// AssertJSONEquals compares two JSON strings for equality.
 func AssertJSONEquals(t *testing.T, expected, actual string) {
+	t.Helper()
 	var expectedData, actualData interface{}
 
 	err := json.Unmarshal([]byte(expected), &expectedData)
@@ -94,37 +99,43 @@ func AssertJSONEquals(t *testing.T, expected, actual string) {
 	assert.Equal(t, expectedData, actualData, "JSON objects should be equal")
 }
 
-// AssertCurrencyFormat checks if a value is formatted as currency
+// AssertCurrencyFormat checks if a value is formatted as currency.
 func AssertCurrencyFormat(t *testing.T, value string) {
+	t.Helper()
 	assert.Contains(t, value, "$", "should contain dollar sign")
 	assert.Contains(t, value, ".", "should contain decimal point")
 }
 
-// AssertPercentageFormat checks if a value is formatted as percentage
+// AssertPercentageFormat checks if a value is formatted as percentage.
 func AssertPercentageFormat(t *testing.T, value string) {
+	t.Helper()
 	assert.Contains(t, value, "%", "should contain percentage sign")
 }
 
-// AssertDateFormat checks if a string is in YYYY-MM-DD format
+// AssertDateFormat checks if a string is in YYYY-MM-DD format.
 func AssertDateFormat(t *testing.T, dateStr string) {
+	t.Helper()
 	assert.Len(t, dateStr, 10, "date should be 10 characters long")
 	assert.Regexp(t, `^\d{4}-\d{2}-\d{2}$`, dateStr, "date should be in YYYY-MM-DD format")
 }
 
-// AssertCIKFormat checks if a string is in proper CIK format (10 digits)
+// AssertCIKFormat checks if a string is in proper CIK format (10 digits).
 func AssertCIKFormat(t *testing.T, cik string) {
+	t.Helper()
 	assert.Len(t, cik, 10, "CIK should be 10 characters long")
 	assert.Regexp(t, `^\d{10}$`, cik, "CIK should be 10 digits")
 }
 
-// AssertAccessionNumberFormat checks if a string is in proper accession number format
+// AssertAccessionNumberFormat checks if a string is in proper accession number format.
 func AssertAccessionNumberFormat(t *testing.T, accessionNumber string) {
+	t.Helper()
 	assert.Regexp(t, `^\d{10}-\d{2}-\d{6}$`, accessionNumber,
 		"accession number should be in format XXXXXXXXXX-XX-XXXXXX")
 }
 
-// WithTimeout runs a function with a timeout
+// WithTimeout runs a function with a timeout.
 func WithTimeout(t *testing.T, timeout time.Duration, fn func()) {
+	t.Helper()
 	done := make(chan bool, 1)
 
 	go func() {
@@ -140,40 +151,46 @@ func WithTimeout(t *testing.T, timeout time.Duration, fn func()) {
 	}
 }
 
-// AssertMoneyValue checks if a monetary value is reasonable (not negative, not extremely large)
+// AssertMoneyValue checks if a monetary value is reasonable (not negative, not extremely large).
 func AssertMoneyValue(t *testing.T, value float64, description string) {
+	t.Helper()
 	assert.True(t, value >= 0, "%s should not be negative: %f", description, value)
 	assert.True(t, value < 1e15, "%s should not be unreasonably large: %f", description, value)
 }
 
-// AssertPercentageValue checks if a percentage value is reasonable
+// AssertPercentageValue checks if a percentage value is reasonable.
 func AssertPercentageValue(t *testing.T, value float64, description string) {
+	t.Helper()
 	assert.True(t, value >= -100, "%s should not be less than -100%%: %f", description, value)
 	assert.True(t, value <= 1000, "%s should not be more than 1000%%: %f", description, value)
 }
 
-// SkipIfShort skips the test if running in short mode
+// SkipIfShort skips the test if running in short mode.
 func SkipIfShort(t *testing.T, reason string) {
+	t.Helper()
 	if testing.Short() {
 		t.Skipf("skipping test in short mode: %s", reason)
 	}
 }
 
-// SkipIfNoIntegration skips the test if integration tests are disabled
+// SkipIfNoIntegration skips the test if integration tests are disabled.
 func SkipIfNoIntegration(t *testing.T) {
+	t.Helper()
 	if os.Getenv("INTEGRATION_TESTS") != "true" {
 		t.Skip("skipping integration test (set INTEGRATION_TESTS=true to enable)")
 	}
 }
 
-// CompareFloats compares two float64 values with a reasonable tolerance
+// CompareFloats compares two float64 values with a reasonable tolerance.
 func CompareFloats(t *testing.T, expected, actual float64, description string) {
+	t.Helper()
 	tolerance := 0.01 // 1 cent tolerance for financial calculations
 	assert.InDelta(t, expected, actual, tolerance, description)
 }
 
-// AssertOrderedByDate checks if filings are ordered by date (most recent first)
+// AssertOrderedByDate checks if filings are ordered by date (most recent first).
 func AssertOrderedByDate(t *testing.T, dates []string, description string) {
+	t.Helper()
 	for i := 0; i < len(dates)-1; i++ {
 		assert.True(t, dates[i] >= dates[i+1],
 			"%s should be ordered by date (most recent first): %s should be >= %s",
@@ -181,20 +198,21 @@ func AssertOrderedByDate(t *testing.T, dates []string, description string) {
 	}
 }
 
-// SetupTestEnvironment sets up common test environment variables
+// SetupTestEnvironment sets up common test environment variables.
 func SetupTestEnvironment() {
 	// Set any required environment variables for testing
 	_ = os.Setenv("SEC_API_BASE_URL", "https://data.sec.gov") // Ignoring error for test setup
 }
 
-// CleanupTestEnvironment cleans up test environment
+// CleanupTestEnvironment cleans up test environment.
 func CleanupTestEnvironment() {
 	// Clean up any test-specific environment variables
 	_ = os.Unsetenv("SEC_API_BASE_URL") // Ignoring error for test cleanup
 }
 
-// CreateTempFile creates a temporary file for testing
+// CreateTempFile creates a temporary file for testing.
 func CreateTempFile(t *testing.T, content string) *os.File {
+	t.Helper()
 	tmpfile, err := os.CreateTemp("", "edgar-test-")
 	require.NoError(t, err, "should create temp file")
 
@@ -216,8 +234,9 @@ func CreateTempFile(t *testing.T, content string) *os.File {
 	return tmpfile
 }
 
-// AssertNoLeakedGoroutines checks that no goroutines are leaked during test execution
+// AssertNoLeakedGoroutines checks that no goroutines are leaked during test execution.
 func AssertNoLeakedGoroutines(t *testing.T, fn func()) {
+	t.Helper()
 	initialCount := countGoroutines()
 
 	fn()
@@ -233,12 +252,12 @@ func AssertNoLeakedGoroutines(t *testing.T, fn func()) {
 		"potential goroutine leak detected: initial=%d, final=%d", initialCount, finalCount)
 }
 
-// countGoroutines returns the current number of goroutines
+// countGoroutines returns the current number of goroutines.
 func countGoroutines() int {
 	return len(getAllGoroutineStacks())
 }
 
-// getAllGoroutineStacks returns stack traces for all goroutines
+// getAllGoroutineStacks returns stack traces for all goroutines.
 func getAllGoroutineStacks() []byte {
 	buf := make([]byte, 1<<16)
 	n := len(buf)
@@ -246,10 +265,11 @@ func getAllGoroutineStacks() []byte {
 		buf = make([]byte, 2*len(buf))
 		n = len(buf) // This would normally use runtime.Stack, but we'll simulate
 	}
+
 	return buf[:n]
 }
 
-// TableTest represents a single test case in a table-driven test
+// TableTest represents a single test case in a table-driven test.
 type TableTest struct {
 	Name     string
 	Input    interface{}
@@ -257,8 +277,10 @@ type TableTest struct {
 	Error    string
 }
 
-// RunTableTests runs a series of table-driven tests
-func RunTableTests(t *testing.T, tests []TableTest, testFunc func(t *testing.T, input, expected interface{}, expectError string)) {
+// RunTableTests runs a series of table-driven tests.
+func RunTableTests(t *testing.T, tests []TableTest,
+	testFunc func(t *testing.T, input, expected interface{}, expectError string)) {
+	t.Helper()
 	for _, tt := range tests {
 		t.Run(tt.Name, func(t *testing.T) {
 			testFunc(t, tt.Input, tt.Expected, tt.Error)
